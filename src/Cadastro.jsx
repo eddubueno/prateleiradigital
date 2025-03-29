@@ -72,7 +72,7 @@ function Cadastro({ tipo, voltarParaLogin, onCadastrado, setExibindoBoasVindas }
           }}>
             <h2 style={{ color: '#1976d2', marginBottom: '15px' }}>🎉 Bem-vindo!</h2>
             <p style={{ fontSize: '16px', marginBottom: '25px' }}>
-              Olá <strong>{nome}</strong>, seja bem-vindo ao <strong>Prateleira Digital</strong>!
+              Olá <strong>{nome}</strong>, seja vindo ao <strong>Prateleira Digital</strong>!
             </p>
             <button onClick={fecharMensagem} style={{
               backgroundColor: '#1976d2',
