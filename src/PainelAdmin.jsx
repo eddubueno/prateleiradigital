@@ -1,4 +1,3 @@
-// PainelAdmin.jsx com menu dropdown do topo estilizado com animação e overlay
 import React, { useState, useEffect } from 'react';
 import {
   collection,
@@ -10,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -23,6 +23,8 @@ function PainelAdmin() {
   const [filtroDataFim, setFiltroDataFim] = useState('');
   const [paginaAtual, setPaginaAtual] = useState('pedidos');
   const [menuAberto, setMenuAberto] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ref = query(collection(db, 'pedidos'), orderBy('criadoEm', 'desc'));
@@ -39,7 +41,6 @@ function PainelAdmin() {
     try {
       await updateDoc(doc(db, 'pedidos', pedidoId), { status: 'entregue' });
     } catch (error) {
-      console.error("Erro ao atualizar status do pedido:", error);
       alert("Erro ao marcar como entregue.");
     }
   };
@@ -94,56 +95,48 @@ function PainelAdmin() {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('tipoUsuario');
+      localStorage.clear();
       await signOut(auth);
-      window.location.reload();
+      navigate('/');
     } catch (error) {
-      console.error("Erro ao sair:", error);
-      alert("Erro ao sair. Tente novamente.");
+      alert("Erro ao sair.");
     }
   };
 
   return (
-    <div style={{ position: 'relative', fontFamily: 'Arial' }}>
-      {/* Ícone do menu */}
+    <div style={{ fontFamily: 'Arial', padding: '20px' }}>
+      {/* Menu Flutuante */}
       <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1001 }}>
         <button onClick={() => setMenuAberto(true)} style={{ fontSize: '24px', background: 'none', border: 'none', cursor: 'pointer' }}>
           ☰
         </button>
       </div>
 
-      {/* Overlay escuro */}
       {menuAberto && (
         <div onClick={() => setMenuAberto(false)} style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          zIndex: 999,
-          transition: 'opacity 0.3s ease-in-out'
+          top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999
         }} />
       )}
 
-      {/* Menu suspenso do topo */}
       <div style={{
         position: 'fixed',
         top: menuAberto ? 0 : '-300px',
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#fff',
         padding: '20px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        zIndex: 1000,
         borderRadius: '0 0 10px 10px',
-        transition: 'top 0.3s ease-in-out',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        zIndex: 1000,
         width: '260px',
-        textAlign: 'center'
+        textAlign: 'center',
+        transition: 'top 0.3s ease-in-out'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
           <h3 style={{ margin: 0 }}>📋 Menu</h3>
-          <button onClick={() => setMenuAberto(false)} style={{ fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}>✖</button>
+          <button onClick={() => setMenuAberto(false)} style={{ background: 'none', border: 'none', fontSize: '18px' }}>✖</button>
         </div>
         <button onClick={() => { setPaginaAtual('pedidos'); setMenuAberto(false); }} style={{ marginBottom: '10px', width: '100%', padding: '10px' }}>
           🧾 Pedidos {pedidosPendentes.length > 0 && <span style={{ color: 'red' }}>({pedidosPendentes.length})</span>}
@@ -151,16 +144,17 @@ function PainelAdmin() {
         <button onClick={() => { setPaginaAtual('produtos'); setMenuAberto(false); }} style={{ marginBottom: '10px', width: '100%', padding: '10px' }}>
           📦 Produtos
         </button>
-        <button onClick={handleLogout} style={{ width: '100%', padding: '10px', backgroundColor: '#ff4444', color: '#fff', border: 'none', borderRadius: '5px' }}>
+        <button onClick={handleLogout} style={{ width: '100%', padding: '10px', backgroundColor: '#ff4444', color: '#fff', borderRadius: '5px' }}>
           🔓 Sair
         </button>
       </div>
 
-      {/* Conteúdo principal */}
-      <div style={{ padding: '20px', marginTop: '60px' }}>
+      {/* Conteúdo */}
+      <div style={{ marginTop: '60px' }}>
         {paginaAtual === 'pedidos' && (
           <>
-            <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>📦 Pedidos Recebidos</h1>
+            <h1 style={{ textAlign: 'center' }}>📦 Pedidos Recebidos</h1>
+
             <div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
               <label>
                 <strong>Status:</strong>
@@ -178,12 +172,18 @@ function PainelAdmin() {
                 <strong>Data Fim:</strong>
                 <input type='date' value={filtroDataFim} onChange={(e) => setFiltroDataFim(e.target.value)} />
               </label>
-              <button onClick={limparFiltros} style={{ padding: '5px 10px', borderRadius: '5px', backgroundColor: '#999', color: '#fff' }}>Limpar Filtros</button>
+              <button onClick={limparFiltros} style={{ padding: '5px 10px', backgroundColor: '#999', color: '#fff', borderRadius: '5px' }}>
+                Limpar Filtros
+              </button>
             </div>
 
             <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
-              <button onClick={exportarParaExcel} style={{ backgroundColor: '#1d6f42', color: '#fff', padding: '10px', borderRadius: '5px' }}>📊 Exportar Excel</button>
-              <button onClick={exportarParaPDF} style={{ backgroundColor: '#1976d2', color: '#fff', padding: '10px', borderRadius: '5px' }}>📄 Exportar PDF</button>
+              <button onClick={exportarParaExcel} style={{ backgroundColor: '#1d6f42', color: '#fff', padding: '10px', borderRadius: '5px' }}>
+                📊 Exportar Excel
+              </button>
+              <button onClick={exportarParaPDF} style={{ backgroundColor: '#1976d2', color: '#fff', padding: '10px', borderRadius: '5px' }}>
+                📄 Exportar PDF
+              </button>
             </div>
 
             {filtrarPedidos().length === 0 ? (
@@ -226,6 +226,7 @@ function PainelAdmin() {
             )}
           </>
         )}
+
         {paginaAtual === 'produtos' && <PainelProdutos />}
       </div>
     </div>

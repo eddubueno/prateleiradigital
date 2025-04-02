@@ -10,37 +10,51 @@ import { auth } from './firebase';
 function Login({ onLogin, irParaCadastro }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!email || !senha) {
+      return alert("Por favor, preencha todos os campos.");
+    }
+
+    setCarregando(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, senha);
       onLogin(userCredential.user);
     } catch (error) {
-      alert(`Erro ao fazer login:\n${error.code}\n${error.message}`);
+      alert(`Erro ao fazer login:\n${error.message}`);
       console.error(error);
+    } finally {
+      setCarregando(false);
     }
   };
 
   const loginComGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    setCarregando(true);
     try {
       const userCredential = await signInWithPopup(auth, provider);
       onLogin(userCredential.user);
     } catch (error) {
-      alert(`Erro no login com Google:\n${error.code}\n${error.message}`);
+      alert(`Erro no login com Google:\n${error.message}`);
       console.error(error);
+    } finally {
+      setCarregando(false);
     }
   };
 
   const loginComApple = async () => {
     const provider = new OAuthProvider('apple.com');
+    setCarregando(true);
     try {
       const userCredential = await signInWithPopup(auth, provider);
       onLogin(userCredential.user);
     } catch (error) {
-      alert(`Erro no login com Apple:\n${error.code}\n${error.message}`);
+      alert(`Erro no login com Apple:\n${error.message}`);
       console.error(error);
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -92,6 +106,7 @@ function Login({ onLogin, irParaCadastro }) {
           />
           <button
             type="submit"
+            disabled={carregando}
             style={{
               backgroundColor: '#1976d2',
               color: '#fff',
@@ -103,7 +118,7 @@ function Login({ onLogin, irParaCadastro }) {
               transition: '0.3s'
             }}
           >
-            Entrar com Email
+            {carregando ? 'Entrando...' : 'Entrar com Email'}
           </button>
         </form>
 
@@ -111,6 +126,7 @@ function Login({ onLogin, irParaCadastro }) {
 
         <button
           onClick={loginComGoogle}
+          disabled={carregando}
           style={{
             backgroundColor: '#4285F4',
             color: '#fff',
@@ -128,6 +144,7 @@ function Login({ onLogin, irParaCadastro }) {
 
         <button
           onClick={loginComApple}
+          disabled={carregando}
           style={{
             backgroundColor: '#000',
             color: '#fff',

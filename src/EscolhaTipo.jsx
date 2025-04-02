@@ -1,15 +1,23 @@
-// EscolhaTipo.jsx
 import React from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import { FaUser, FaStore } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+
 
 function EscolhaTipo({ onEscolherTipo }) {
+  const navigate = useNavigate();
+
+  const escolher = (tipo) => {
+    onEscolherTipo(tipo);
+    navigate('/'); // volta para a rota raiz, App decide o que mostrar
+  };
+
   const voltarAoLogin = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem('tipoUsuario');
-      window.location.reload(); // Agora sim, recarrega com tudo limpo
+      navigate('/');
     } catch (error) {
       console.error("Erro ao sair:", error);
       alert("Erro ao voltar ao login.");
@@ -37,7 +45,7 @@ function EscolhaTipo({ onEscolherTipo }) {
         maxWidth: '300px'
       }}>
         <button
-          onClick={() => onEscolherTipo('cliente')}
+          onClick={() => escolher('cliente')}
           style={{
             padding: '15px',
             fontSize: '18px',
@@ -56,7 +64,7 @@ function EscolhaTipo({ onEscolherTipo }) {
         </button>
 
         <button
-          onClick={() => onEscolherTipo('dono')}
+          onClick={() => escolher('dono')}
           style={{
             padding: '15px',
             fontSize: '18px',
